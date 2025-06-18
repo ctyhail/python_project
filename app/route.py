@@ -1,4 +1,6 @@
-from planner.path_finder import TrainGraph
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
 from crawler.train_schedule_scraper import query_train_schedule
 from crawler.station_parser import fetch_station_codes
 from crawler.train_price_scraper import query_train_price
@@ -22,33 +24,39 @@ def parse_duration(duration_str):
         return h * 60 + m
     return 0
 
-def simulate_live_query(strategy='cheapest', time_start='06:00', time_end='12:00', top_k=5):
-    stations = load_station_mapping()
-    reverse_map = {v: k for k, v in stations.items()}
+def search_transfer_routes(from_city, to_city, date, start_time, end_time, strategy, top_k=5, middle_station=''):
+    # 使用 stations.json，query_train_schedule，query_train_price
+    # 返回结果为 JSON 格式的中转方案列表
+    # 与 simulate_live_query 相同逻辑，只是不 print，返回列表
     
-    from_city = str(input("起始地："))
-    to_city = str(input("目的地："))
-    date = str(input("日期（年-月-日）："))
+    stations = load_station_mapping()
+    #reverse_map = {v: k for k, v in stations.items()}
+    
 
     from_code = stations.get(from_city)
     to_code = stations.get(to_city)
+    if middle_station != '':
+        mid_code = stations.get(middle_station)
+    else:
+        mid_code = ''
 
     if not from_code or not to_code:
         print("城市名未找到")
         return
 
-    train_data = query_train_schedule(from_code, to_code, date)
+    train_data = query_train_schedule(from_code, to_code, date, top_k=top_k, middle_station=mid_code)
     if not train_data:
         print("未获取到车次数据")
         return
 
     routes = []
-    time_window_start = time_to_minutes(time_start)
-    time_window_end = time_to_minutes(time_end)
+    time_window_start = time_to_minutes(start_time)
+    time_window_end = time_to_minutes(end_time)
 
     for item in train_data:
         try:
             all_time = item['all_lishi_minutes']
+            wait_time = item['wait_time_minutes']
             arrive_date = item['arrive_date']
             arrive_time = item['arrive_time']
             from_station_name = item['from_station_name']
@@ -92,7 +100,8 @@ def simulate_live_query(strategy='cheapest', time_start='06:00', time_end='12:00
                 "trains": train_ids,
                 "total_price": total_price,
                 "total_time": total_time,
-                "depart_time": first_departure
+                "depart_time": first_departure,
+                "wait_time": wait_time
             })
 
         except Exception as e:
@@ -112,22 +121,17 @@ def simulate_live_query(strategy='cheapest', time_start='06:00', time_end='12:00
         print("策略错误，应为 'cheapest' 或 'fastest'")
         return
 
-    # 显示前 top_k 个方案
-    print(f"\n🚩 共找到 {len(routes)} 个符合条件的方案，以下是按策略“{strategy}”排序的前 {top_k} 个：\n")
-    for i, route in enumerate(routes[:top_k], 1):
-        print(f"🔹方案 {i}:")
-        print(f"   路线: {route['from']} -> ", end='')
-        for mid in route['route']:
-            print(f"{mid} -> ", end='')
-        print(route['to'])
-        print(f"   ⏱️ 乘车时间: {route['total_time']} 分钟")
-        print(f"   💰 总票价: ￥{route['total_price']:.1f}")
-        print(f"   🕓 出发: {route['depart_time']}，抵达: {route['arrive_date']} {route['arrive_time']}")
-        print(f"   🚄 共 {len(route['trains'])} 段车程：{', '.join(route['trains'])}")
-        print("-" * 60)
+    #print(routes)
+    return routes[:top_k]  # 示例最多返回 10 条
 
 
-if __name__ == '__main__':
-    if not os.path.exists('data/stations.json'):
-        fetch_station_codes()
-    simulate_live_query(strategy='cheapest', time_start='06:00', time_end='12:00')
+
+if __name__ == "__main__":
+    from_city = '重庆'
+    to_city = '桂林'
+    date = '2025-06-18'
+    start_time = '06:00'
+    end_time = '22:00'
+    strategy = 'cheapest'
+    top_k = 5
+    print(search_transfer_routes(from_city, to_city, date, start_time, end_time, strategy, top_k, middle_station=''))

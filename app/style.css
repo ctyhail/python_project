@@ -1,0 +1,7 @@
+/* style.css */
+body {
+  font-family: "Microsoft YaHei", sans-serif;
+}
+.card + .card {
+  margin-top: 1rem;
+}

@@ -7,7 +7,7 @@ import time
 def query_train_price(from_station, to_station, date, train_no):
 
     """
-    return 该车次的所有票的价格
+    return 以列表的形式返回该车次的所有票的价格
     """
 
     #time.delay(100)

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>中转方案查询系统</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h1 class="text-center mb-4">中转方案查询系统</h1>
+    
+    <form id="queryForm" class="border p-4 bg-white shadow-sm rounded mb-4">
+      <div class="row mb-3">
+        <div class="col">
+          <input type="text" class="form-control" id="from" placeholder="出发地">
+        </div>
+        <div class="col">
+          <input type="text" class="form-control" id="to" placeholder="目的地">
+        </div>
+        <div class="col">
+          <input type="text" class="form-control" id="middle" placeholder="中转站" value="">
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col">
+          <label>起始时间</label>
+          <input type="time" class="form-control" id="startTime" value="06:00">
+        </div>
+        <div class="col">
+          <label>截止时间</label>
+          <input type="time" class="form-control" id="endTime" value="22:00">
+        </div>
+        <div class="col">
+          <label>日期</label>
+          <input type="date" class="form-control" id="date">
+        </div>
+      </div>
+      <div class="row mb-4">
+      <div class="col">
+            <label>显示方案数量</label>
+            <select id="top_k" class="form-select">
+            <option value=5>5</option>
+            <option value=10>10</option>
+            <option value=20>20</option>
+            <option value=50>50</option>
+            </select>
+      </div>
+      <div class="col">
+            <label>排序策略</label>
+            <select id="strategy" class="form-select">
+            <option value="cheapest">最便宜</option>
+            <option value="fastest">最快</option>
+            </select>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">查询中转方案</button>
+    </form>
+
+    <div id="resultArea"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
